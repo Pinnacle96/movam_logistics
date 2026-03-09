@@ -58,7 +58,11 @@ class OrderController extends Controller
         if ($user->hasRole('customer')) {
             $orders->where('customer_id', $user->id);
         } elseif ($user->hasRole('merchant')) {
-            $orders->where('merchant_id', $user->merchant->id);
+            $merchantId = $user->merchant?->id;
+            if (!$merchantId) {
+                return response()->json(['data' => [], 'message' => 'Merchant profile not found.'], 200);
+            }
+            $orders->where('merchant_id', $merchantId);
         } elseif ($user->hasRole('rider')) {
             $orders->where('rider_id', $user->id);
         }

@@ -27,17 +27,21 @@ const route = useRoute();
 const router = useRouter();
 const order = ref<any>(null);
 const loading = ref(true);
+const error = ref<string | null>(null);
 const mapContainer = ref<HTMLElement | null>(null);
 const map = ref<any>(null);
 const riderMarker = ref<any>(null);
 
 const fetchOrder = async () => {
+  loading.value = true;
+  error.value = null;
   try {
     const response = await api.get(`/orders/${route.params.id}`);
     order.value = response.data;
     updateRiderPosition();
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to fetch order', err);
+    error.value = err.response?.data?.message || 'Failed to load order tracking. Please try again.';
   } finally {
     loading.value = false;
   }
@@ -103,10 +107,12 @@ const initMap = () => {
 };
 
 const updateRiderPosition = () => {
-  if (!map.value || !order.value?.rider) return;
+  if (!map.value || !order.value?.rider?.rider) return;
 
-  const riderLng = parseFloat(order.value.rider.rider.current_lng);
-  const riderLat = parseFloat(order.value.rider.rider.current_lat);
+  const riderLng = parseFloat(order.value.rider.rider.current_lng) || 0;
+  const riderLat = parseFloat(order.value.rider.rider.current_lat) || 0;
+
+  if (riderLng === 0 || riderLat === 0) return;
 
   if (!riderMarker.value) {
     const riderEl = document.createElement('div');
@@ -146,14 +152,26 @@ onUnmounted(() => {
   if (map.value) map.value.remove();
 });
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+const formatCurrency = (amount: any) => {
+  const val = parseFloat(amount) || 0;
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(val);
 };
 </script>
 
 <template>
-  <div v-if="loading && !order" class="flex items-center justify-center h-full">
+  <div v-if="loading && !order" class="flex items-center justify-center h-full min-h-[400px]">
     <Loader2 class="w-12 h-12 text-blue-500 animate-spin" />
+  </div>
+
+  <div v-else-if="error" class="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
+    <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-4">
+      <Package class="w-8 h-8" />
+    </div>
+    <h2 class="text-xl font-bold text-white mb-2">Something went wrong</h2>
+    <p class="text-zinc-400 mb-6 max-w-md">{{ error }}</p>
+    <button @click="fetchOrder" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all">
+      Retry Loading
+    </button>
   </div>
 
   <div v-else-if="order" class="max-w-6xl mx-auto space-y-8 lg:space-y-12 animate-in fade-in duration-700">

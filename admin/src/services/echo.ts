@@ -14,7 +14,7 @@ const echo = new Echo({
     authorizer: (channel: any) => {
         return {
             authorize: (socketId: string, callback: any) => {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('auth_token');
                 fetch(`${import.meta.env.VITE_API_BASE_URL}/broadcasting/auth`, {
                     method: 'POST',
                     headers: {

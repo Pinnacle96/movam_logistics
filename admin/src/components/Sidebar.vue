@@ -9,10 +9,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Package,
-  ShoppingBag,
-  Map,
   History,
-  CreditCard
+  CreditCard,
+  X,
+  ShoppingBag,
+  Map
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { useAuthStore } from '../stores/auth';

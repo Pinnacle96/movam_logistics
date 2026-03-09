@@ -8,28 +8,33 @@ import {
   Clock, 
   ChevronRight, 
   Loader2,
-  Search,
-  Filter,
   Store
 } from 'lucide-vue-next';
 
 const orders = ref<any[]>([]);
 const loading = ref(true);
+const error = ref<string | null>(null);
 const router = useRouter();
 
 const fetchOrders = async () => {
+  loading.value = true;
+  error.value = null;
   try {
     const response = await api.get('/orders');
-    orders.value = response.data;
-  } catch (err) {
+    // Handle paginated response or direct array
+    const data = response.data.data || response.data;
+    orders.value = Array.isArray(data) ? data : [];
+  } catch (err: any) {
     console.error('Failed to fetch orders', err);
+    error.value = err.response?.data?.message || 'Failed to load orders. Please try again.';
   } finally {
     loading.value = false;
   }
 };
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+const formatCurrency = (amount: any) => {
+  const val = parseFloat(amount) || 0;
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(val);
 };
 
 onMounted(fetchOrders);
@@ -44,6 +49,11 @@ onMounted(fetchOrders);
 
     <div v-if="loading" class="flex justify-center py-20">
       <Loader2 class="w-12 h-12 text-blue-500 animate-spin" />
+    </div>
+
+    <div v-else-if="error" class="bg-red-500/10 border border-red-500/20 rounded-3xl p-12 text-center">
+      <p class="text-red-500 font-bold mb-4">{{ error }}</p>
+      <button @click="fetchOrders" class="bg-zinc-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-zinc-700 transition-all">Retry</button>
     </div>
 
     <div v-else-if="orders.length === 0" class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-20 text-center shadow-sm">
