@@ -1,0 +1,218 @@
+﻿Movam — Full Developer Source of Truth (Production-Ready)
+Purpose
+This document is the single source of truth for the Movam development team. It contains complete technical specifications, architecture, features, dependencies, infrastructure setup, cost-optimized recommendations, notifications, payment flows, and deployment strategy for building a market-ready Movam platform.
+
+
+1. Platform Overview
+Components:
+Component
+	Purpose
+	Backend API
+	Laravel 11+ with Octane for high concurrency; handles business logic, payments, notifications, settlements
+	Customer App
+	Flutter mobile app (iOS & Android) for placing orders, tracking, wallet, and payments
+	Rider App
+	Flutter app for real-time delivery tracking, navigation, and earnings
+	Merchant App
+	Flutter app / Web for managing orders, inventory, promotions, analytics
+	Admin Console
+	Web dashboard for Super Admin: monitor users, orders, wallets, notifications, analytics
+	Analytics Dashboard
+	Real-time insights for internal and enterprise clients
+	
+
+2. Technology Stack
+Layer
+	Technology
+	Backend
+	PHP 8.2+, Laravel 11+, Octane (Swoole), MySQL/PostgreSQL, Redis (optional caching)
+	Queue/Event Broker
+	RabbitMQ (free/open-source)
+	Mobile Apps
+	Flutter 3.x (single codebase for iOS & Android)
+	Frontend Admin
+	Vue.js 3 + TailwindCSS, Axios, Vuex, Chart.js / ApexCharts
+	Push Notifications
+	Firebase Cloud Messaging (FCM)
+	Mapping & Routing
+	Mapbox Flutter SDK (free tier, efficient)
+	Payments
+	Paystack / Flutterwave API integration
+	Storage
+	AWS S3 or DigitalOcean Spaces
+	CI/CD
+	GitHub Actions / GitLab CI, Dockerized builds, App Store & Play Store deployment
+	DevOps / Hosting
+	Docker, Nginx, Cloud VM / AWS / DO / GCP
+	
+
+3. Features
+3.1 Customer App
+* Account creation & login (Email, Phone, OTP)
+* Location selection (map + manual)
+* Search merchants & products
+* Place prepaid orders with dynamic service fee
+* Track order in real-time (Mapbox)
+* Rate & review merchants/riders
+* Wallet & transaction history
+* Notifications for status updates (push, in-app)
+* Cancel/modify orders before dispatch
+* In-app support chat
+* Referral system
+* Promotions / discounts
+3.2 Rider App
+* Registration with verification (ID, vehicle info)
+* Order assignment & batching (algorithmic dispatch)
+* Mapbox navigation
+* Pickup & delivery confirmation
+* Real-time location sharing
+* Earnings dashboard & wallet withdrawal
+* Notifications (new order, updates)
+3.3 Merchant App / Web
+* Account onboarding & business verification
+* Product catalog / inventory management
+* Order management (accept/reject, prepare)
+* Commission & revenue dashboard
+* Priority listing / promotion subscription
+* Inventory alerts
+* Analytics: sales trends, peak hours, customer behavior
+* Refund & dispute management
+* Notifications (new orders, updates)
+3.4 Admin / Superadmin Console
+* User, rider, merchant management
+* Order management & assignments
+* Payment & settlement overview
+* Commission & subscription management
+* Delivery fee management (dynamic pricing)
+* Analytics & reporting (real-time dashboards)
+* Push notification management
+* Fraud detection & audit logs
+* Configurable notifications for web/iOS/Android
+3.5 Notifications
+* Push: Firebase Cloud Messaging (FCM)
+* Web push: Service workers + FCM
+* Email: Laravel Mail + SendGrid / SMTP
+* SMS: Twilio / local provider
+* Triggers: new order, rider assignment, status updates, wallet updates, merchant subscription, promotions
+
+
+4. Payment & Wallet Architecture
+* Prepaid only (no cash-on-delivery)
+* Customer pays Movam → funds split automatically
+* Commission deducted at source
+* Wallet system for riders and merchants:
+   * Rider Wallet: delivery fee payout
+   * Merchant Wallet: order value minus commission
+   * Movam Wallet: commission + delivery margin + subscription revenue
+* Refunds & disputes handled via Laravel backend
+* Payment APIs: Paystack / Flutterwave (PCI compliant)
+Example Flow
+Customer pays ₦11,000 (₦10,000 order + ₦1,000 delivery)
+* Merchant commission 12% → ₦1,200 to Movam
+* Rider delivery share 70% → ₦700
+* Movam margin: commission + 30% delivery fee → ₦1,500 total
+
+
+5. Real-time & High Concurrency
+* Laravel Octane + Swoole → thousands of concurrent requests
+* RabbitMQ → asynchronous queues for:
+   * Order assignment
+   * Wallet settlements
+   * Notifications
+   * Subscription renewals
+* Redis optional for caching & real-time location updates
+* WebSockets via Laravel WebSockets (with Octane)
+
+
+6. Infrastructure & Deployment (Cost-Optimized)
+* Backend: Dockerized Laravel 11+ Octane API
+* Queue Broker: RabbitMQ self-hosted (free)
+* Cache: Optional Redis for small instance
+* Database: MySQL 8 / PostgreSQL 15
+* Storage: AWS S3 / DigitalOcean Spaces
+* Mobile: Flutter 3.x builds
+* Admin Console: Vue.js 3 + TailwindCSS
+* CI/CD: GitHub Actions, automated Docker builds, automated deployment to staging/production
+* SSL & HTTPS: Nginx with Let’s Encrypt
+Cost Reduction Measures
+* Use Mapbox free tier for maps & routing
+* Self-host RabbitMQ instead of managed queues
+* Redis only for caching, not queue broker
+* DigitalOcean Spaces for cost-effective storage
+* Prepaid-only payment avoids cash handling overhead
+
+
+7. Dependencies & Plugins
+Laravel Backend
+* laravel/sanctum → API authentication
+* laravel-permission → roles & permissions
+* laravel/octane → high concurrency
+* laravel-websockets → real-time events
+* guzzlehttp/guzzle → HTTP client for payment APIs
+* predis/predis → Redis caching (optional)
+* barryvdh/laravel-cors → CORS
+* laravel-notification-channels/fcm → push notifications
+Flutter Apps
+* flutter_map / mapbox_gl → mapping & routing
+* geolocator → GPS tracking
+* firebase_messaging → push notifications
+* flutter_local_notifications → in-app notifications
+* dio → HTTP client
+* provider / bloc → state management
+* flutter_secure_storage → secure JWT/wallet storage
+* hive / sqlite → offline caching
+Vue.js Admin Console
+* axios → HTTP client
+* vue-router → navigation
+* vuex → state management
+* tailwindcss → styling
+* chart.js / apexcharts → analytics
+* pusher-js → real-time updates
+
+
+8. Developer Environment Setup
+1. Install Docker & Docker Compose
+2. Clone repository & configure .env
+3. Build backend containers → docker-compose up --build
+4. Run migrations & seeders
+5. Install Node.js & NPM for Vue.js admin
+6. Install Flutter SDK + Android Studio + Xcode (iOS)
+7. Configure Firebase for FCM notifications
+8. Configure payment APIs (Paystack / Flutterwave)
+9. Setup RabbitMQ & optional Redis
+10. Configure cron jobs for wallet settlement, subscription renewals, analytics
+
+
+9. Mandatory Functional Flow
+1. Customer places order → prepaid payment
+2. Laravel validates & saves order
+3. Order queued in RabbitMQ → triggers:
+   * Rider assignment
+   * Merchant notification
+   * Customer notification
+   * Wallet settlement
+4. Rider picks up & delivers → confirms via app
+5. Wallets updated automatically
+6. Notifications sent at each status change
+7. Analytics updated in real-time
+
+
+10. iOS & Android App Considerations
+* iOS: APNs + FCM, background location tracking, App Store guidelines, PCI compliant payments
+* Android: FCM, GPS tracking, background services for rider, Play Store deployment
+* Prepaid only → simplifies compliance
+* Offline caching for poor connectivity areas
+
+
+11. Revenue Enforcement
+* Mandatory monetization on all streams:
+   * Merchant commission
+   * Delivery fee margin
+   * Priority listings / promotions subscription
+   * Logistics-as-a-Service (LaaS) for enterprises
+   * Data insights & analytics for retailers
+* All transactions handled in platform → automatic split of funds
+* Prepaid ensures revenue is captured before delivery
+
+
+This document is the single source of truth for developers, covering all features, architecture, infrastructure, notifications, payment flow, and cost-optimized recommendations for building Movam as a fully market-ready, production-level platform.

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { background: #3b82f6; padding: 40px 20px; text-align: center; color: white; }
+        .content { padding: 40px; text-align: center; }
+        .otp { font-size: 48px; font-weight: bold; letter-spacing: 10px; color: #3b82f6; margin: 20px 0; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; background: #fafafa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Movam Wallet</h1>
+            <p>Withdrawal Verification</p>
+        </div>
+        <div class="content">
+            <h2>Confirm Withdrawal</h2>
+            <p>A withdrawal of <strong>₦{{ number_format($amount, 2) }}</strong> was requested from your Movam wallet.</p>
+            <p>Enter the code below to authorize this transaction:</p>
+            <div class="otp">{{ $token }}</div>
+            <p>If you did not request this, please contact support immediately.</p>
+        </div>
+        <div class="footer">
+            &copy; {{ date('Y') }} Movam Logistics. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
